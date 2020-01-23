@@ -15,9 +15,15 @@ import (
 // location (but only if the write fully succeeds, otherwise the existing file
 // is unmodified).
 func WriteFile(filename string, r io.Reader) (err error) {
+	// get absolute path to make sure TempFile always has a directory to prevent
+	// using the default, resulting in attempts to move across file system boundaries
+	absfilename, err := filepath.Abs( filename )
+	if err != nil {
+		return fmt.Errorf("cannot get absolute path: %v", err)
+	}
 	// write to a temp file first, then we'll atomically replace the target file
 	// with the temp file.
-	dir, file := filepath.Split(filename)
+	dir, file := filepath.Split( absfilename )
 	f, err := ioutil.TempFile(dir, file)
 	if err != nil {
 		return fmt.Errorf("cannot create temp file: %v", err)
